@@ -3,10 +3,14 @@
 - numpy
 - matplotlib
 
+### Setup
+```
+    pip install -r requirements.txt
+```
 
 ### TODO
 
-- [ ] Create a requirements.txt (Add install instructions)
+- [X] Create a requirements.txt (Add install instructions)
 - [X] Make RNN class a separate file
 - [ ] Feed forwarding batches and train on mini batches
 - [ ] Read glove WordToVec
