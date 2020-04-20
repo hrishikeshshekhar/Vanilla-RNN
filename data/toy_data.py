@@ -81,3 +81,15 @@ test_data = {
   'this was good earlier': True,
   'i was not happy and not good earlier': False,
 }
+
+
+# Creating the vocabulary
+vocab = set([word for sentence in train_data for word in sentence.split(' ')])
+vocab_size = len(vocab)
+
+# Creating a mapping of word to index
+word_to_index = {}
+index_to_word = {}
+for index, word in enumerate(vocab):
+    word_to_index[word] = index
+    index_to_word[index] = word

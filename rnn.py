@@ -1,9 +1,9 @@
 import numpy as np
 import pickle
-
+import sys
 
 class RNN:
-    def __init__(self, input_dim, hidden_dim, output_dim, word_to_index, learning_rate=0.001):
+    def __init__(self, word_to_index, input_dim, output_dim, hidden_dim=64, learning_rate=0.001):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
@@ -176,6 +176,9 @@ class RNN:
 
     def save_weights(self, save_path):
         weights = {
+            'input_dim' : self.input_dim,
+            'output_dim' : self.output_dim,
+            'hidden_dim' : self.hidden_dim,
             'Whh' : self.Whh,
             'Whx' : self.Whx,
             'Wyh' : self.Wyh,
@@ -191,6 +194,30 @@ class RNN:
     def load_weights(self, save_path):  
         weights_file = open(save_path, "r")
         weights = pickle.load(weights_file)
+
+        # Checking whether model created has input and output dims the same as the loaded file
+        if(self.input_dim != weights['input_dim'] or self.hidden_dim != weights['hidden_dim'] or self.output_dim != weights['output_dim']):
+            print("Warning : The dimensions of your current model and the loaded model do not match with the loaded data")
+            print("Your model dimensions : ")
+            print("                        ")
+            print("Input Dimension : {}").format(self.input_dim)
+            print("Hidden Dimension : {}").format(self.hidden_dim)
+            print("Output Dimension : {}").format(self.output_dim)
+            print("                        ")
+
+            print(" Loaded model's dimensions")
+            print("                        ")
+            print("Input Dimension : {}").format(weights['input_dim'])
+            print("Hidden Dimension : {}").format(weights['hidden_dim'])
+            print("Output Dimension : {}").format(weights['output_dim'])
+            print("                        ")
+
+            text = raw_input(" Enter [Y] to continue to load model : \t")
+
+            if(text != "Y" and text != "y"):
+                print("                        ")
+                print("Aborting model loading")
+                sys.exit()
         
         # Resassigning weights to correct locations
         self.Whh = weights['Whh']
@@ -198,8 +225,13 @@ class RNN:
         self.Wyh = weights['Wyh']
         self.bh = weights['bh']
         self.by = weights['by']
+        self.input_dim = weights['input_dim']
+        self.output_dim = weights['output_dim']
+        self.hidden_dim = weights['hidden_dim']
 
+        
         print("Loaded weights from path : {} successfully".format(save_path))
 
     def predict(self, words):
-        return self.forward(words)
+        inputs = self.createInputs(words)
+        return self.forward(inputs)
