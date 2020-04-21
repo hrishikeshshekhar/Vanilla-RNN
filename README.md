@@ -14,7 +14,7 @@
 - [X] Make RNN class a separate file
 - [ ] Parse IMBD Reviews
 - [ ] Train on IMBD Reviews
-- [ ] Feed forwarding batches and train on mini batches
+- [X] Feed forwarding batches and train on mini batches
 - [X] Read glove WordToVec
 - [X] Save and load weights
 - [X] Interactive command line for testing 

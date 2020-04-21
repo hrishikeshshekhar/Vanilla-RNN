@@ -9,7 +9,7 @@ test_data  = toy_data.test_data
 rnn = RNN(word2vec, embedding_dim, 2)
 
 # Loading the weights
-save_path = "./weights/weight_data.pkl"
+save_path = "./weights/weight_data_30_64.pkl"
 rnn.load_weights(save_path)
 
 while(1):
