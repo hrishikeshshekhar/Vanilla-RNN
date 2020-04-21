@@ -12,8 +12,10 @@
 
 - [X] Create a requirements.txt (Add install instructions)
 - [X] Make RNN class a separate file
+- [ ] Parse IMBD Reviews
+- [ ] Train on IMBD Reviews
 - [ ] Feed forwarding batches and train on mini batches
-- [ ] Read glove WordToVec
+- [X] Read glove WordToVec
 - [X] Save and load weights
 - [X] Interactive command line for testing 
 - [ ] Create API for sentiment classification

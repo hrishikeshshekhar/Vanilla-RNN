@@ -2,22 +2,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from rnn import RNN 
-from data import toy_data
+from data import toy_data, word2vec, embedding_dim
 
 train_data = toy_data.train_data
 test_data  = toy_data.test_data
-word_to_index = toy_data.word_to_index
-vocab_size = toy_data.vocab_size
 
 # Creating an rnn
-rnn = RNN(word_to_index, vocab_size, 2)
+rnn = RNN(word2vec, embedding_dim, 2)
 
 # Displaying a summary of the model
 rnn.summary()
 
 # Loading data
-save_path = "./weights/weight_data.pkl"
-rnn.load_weights(save_path)
+# save_path = "./weights/weight_data.pkl"
+# rnn.load_weights(save_path)
 
 # Training the rnn
 epochs = 10001

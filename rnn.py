@@ -3,12 +3,12 @@ import pickle
 import sys
 
 class RNN:
-    def __init__(self, word_to_index, input_dim, output_dim, hidden_dim=64, learning_rate=0.001):
+    def __init__(self, word2vec, input_dim, output_dim, hidden_dim=64, learning_rate=0.001):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
         self.learning_rate = learning_rate
-        self.word_to_index = word_to_index
+        self.word2vec = word2vec
 
         # Creating the initial weights
         self.Whx = np.random.normal(0, 1, (hidden_dim, input_dim))
@@ -23,8 +23,11 @@ class RNN:
         inputs = []
 
         for word in words.split(' '):
-            vec = np.zeros(self.input_dim)
-            vec[self.word_to_index[word]] = 1
+            try:
+                vec = self.word2vec[word]
+            except:
+                print("Word {} dosen't exist in glove word to vec").format(word)
+                inputs.append(np.zeros(self.hidden_dim))
             inputs.append(vec)
 
         inputs = np.array(inputs).reshape((len(inputs), self.input_dim, 1))
@@ -102,6 +105,7 @@ class RNN:
     def train(self, training_data, testing_data, epochs, verbose=False):
         losses = []
         correct_ans = []
+        log_frequency = int(float(epochs) / 100)
 
         for epoch in range(epochs):
             loss = 0
@@ -126,7 +130,7 @@ class RNN:
             correct_ans.append(num_correct)
 
             # Printing loss and number of correctly classified values
-            if(verbose and epoch % 100 == 0):
+            if(verbose and epoch % log_frequency == 0):
                 print("                            ")
                 print("                            ")
                 print("                            ")
