@@ -206,11 +206,8 @@ class RNN:
 
             # Printing loss and number of correctly classified values
             if(verbose and epoch % log_frequency == 0):
-                print("                            ")
-                print("                            ")
-                print("                            ")
-                print("Epoch : {}").format(epoch)
-                print("                            ")
+                
+                print("\n\n\n Epoch : {} \n").format(epoch)
                 print("TRAINING_DATA")
                 print("Loss : {}").format(loss / training_size)
                 print("Correctly classified : {} percent of data").format(
@@ -247,14 +244,13 @@ class RNN:
     def summary(self):
         total_params = (self.hidden_dim * self.hidden_dim) + (self.input_dim * self.hidden_dim) + (
             self.output_dim * self.hidden_dim) + (self.hidden_dim) + (self.output_dim)
-        print("                                                    ")
-        print("====================================================")
+        print("\n ====================================================")
         print(" Total trainable parameters : {}".format(total_params))
         print(" Learning Rate : {}".format(self.learning_rate))
         print(" Input dimension : {}".format(self.input_dim))
         print(" Output dimension : {}".format(self.output_dim))
         print(" Hidden dimension : {}".format(self.hidden_dim))
-        print("====================================================")
+        print("\n ====================================================")
         print("                                                    ")
 
     def save_weights(self, save_path):
@@ -281,20 +277,16 @@ class RNN:
         # Checking whether model created has input and output dims the same as the loaded file
         if(self.input_dim != weights['input_dim'] or self.hidden_dim != weights['hidden_dim'] or self.output_dim != weights['output_dim']):
             print("Warning : The dimensions of your current model and the loaded model do not match with the loaded data")
-            print("Your model dimensions : ")
-            print("                        ")
+            print("Your model dimensions : \n")
             print("Input Dimension : {}").format(self.input_dim)
             print("Hidden Dimension : {}").format(self.hidden_dim)
-            print("Output Dimension : {}").format(self.output_dim)
-            print("                        ")
-
-            print(" Loaded model's dimensions")
-            print("                        ")
+            print("Output Dimension : {} \n").format(self.output_dim)
+            
+            print(" Loaded model's dimensions\n")
             print("Input Dimension : {}").format(weights['input_dim'])
             print("Hidden Dimension : {}").format(weights['hidden_dim'])
-            print("Output Dimension : {}").format(weights['output_dim'])
-            print("                        ")
-
+            print("Output Dimension : {} \n").format(weights['output_dim'])
+            
             text = raw_input(" Enter [Y] to continue to load model : \t")
 
             if(text != "Y" and text != "y"):

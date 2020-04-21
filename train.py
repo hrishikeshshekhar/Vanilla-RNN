@@ -11,9 +11,10 @@ test_data = toy_data.test_data
 learning_rate = 0.001
 hidden_dim = 64
 batch_size = 5
+output_dim = 2
 
 # Creating an rnn
-rnn = RNN(word2vec, embedding_dim, 2, hidden_dim = hidden_dim, learning_rate = learning_rate)
+rnn = RNN(word2vec, embedding_dim, output_dim, hidden_dim = hidden_dim, learning_rate = learning_rate)
 
 # Displaying a summary of the model
 rnn.summary()

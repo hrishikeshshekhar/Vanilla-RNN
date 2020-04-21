@@ -1,3 +1,4 @@
 *.pyc
 weights/*
 data/imbd_reviews/*
+study/*
