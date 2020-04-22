@@ -5,12 +5,13 @@ import math
 
 
 class RNN:
-    def __init__(self, word2vec, input_dim, output_dim, hidden_dim=64, learning_rate=0.001):
+    def __init__(self, word2vec, input_dim, output_dim, sentence_length, hidden_dim=64, learning_rate=0.001):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
         self.learning_rate = learning_rate
         self.word2vec = word2vec
+        self.sentence_length = sentence_length
 
         # Calculating xavier initializer constants
         whx = math.sqrt(6) / math.sqrt(self.hidden_dim + self.input_dim)
@@ -27,25 +28,35 @@ class RNN:
         self.by = np.random.normal(0, 1, (output_dim, 1))
 
     def createInputs(self, words):
+        # Lowercasing all the words
+        words = words.lower()
         inputs = []
 
         for word in words.split(' '):
             try:
                 vec = self.word2vec[word]
+                inputs.append(vec)
             except:
-                print("Word {} dosen't exist in glove word to vec").format(word)
+                print("Word {} doesn't exist in glove word to vec").format(word)
                 inputs.append(np.zeros(self.hidden_dim))
-            inputs.append(vec)
 
+        # Padding the inputs
+        padded_inputs = self.pad_sentence(inputs)
+        trimmed_inputs = self.trim_sentence(padded_inputs)
+        inputs = np.array(trimmed_inputs).reshape(self.sentence_length, self.input_dim)
         return inputs
 
     # Performs feed forward on the RNN
     def forward(self, data):
         # Getting dimensions from the input
-        sentence_length = data.shape[0]
-        assert(data.shape[1] == self.input_dim)
+        try:
+            assert(data.shape[0] == self.sentence_length)
+            assert(data.shape[1] == self.input_dim)
+        except:
+            raise ValueError("Expected data with dims of : {} but got data with dims : {}").format((self.sentence_length, self.input_dim, None) , data.shape)
+        
         batch_size = data.shape[2]
-
+        
         # Fixing the initial state as a zero vector
         h = np.zeros((self.hidden_dim,  batch_size))
 
@@ -125,6 +136,23 @@ class RNN:
         self.bh  -= dL_dbh
         self.by  -= dL_dby
 
+    def pad_sentence(self, words):
+        padding = [0 for _ in range(self.input_dim)]
+
+        # Padding sentences if size is less than self.sentence_length
+        sentence_length = len(words)
+        if(sentence_length < self.sentence_length):
+            for _ in range(self.sentence_length - sentence_length):
+                words.append(padding)
+
+        return words
+    
+    def trim_sentence(self, words):
+        # Trimming sentences if the length is greater than self.sentence_length
+        if(len(words) > self.sentence_length):
+            return words[:self.sentence_length]
+        return words
+
     def train(self, training_data, testing_data, epochs, verbose=False, batch_size=1):
         # Checking params
         assert(batch_size <= len(training_data.values()))
@@ -149,27 +177,16 @@ class RNN:
         batch_training_X = []
         batch_training_Y = []
 
-        # Inserting padding to make all batches of even size
-        padding = [0 for _ in range(self.input_dim)]
-
+        # Splitting training data into batches
         for batch in range(batches):
             start_index = batch_size * batch
             end_index = min(batch_size * (batch + 1), training_size)
             temp_batch_size = end_index - start_index
             batch_train_X = training_X[start_index: end_index]
-            batch_max_size = np.max([len(sentence)
-                                     for sentence in batch_train_X])
-
-            # Making all the sentences the same size by padding zeros
-            for sentence in batch_train_X:
-                sentence_length = len(sentence)
-                if(sentence_length < batch_max_size):
-                    for _ in range(batch_max_size - sentence_length):
-                        sentence.append(padding)
 
             # Creating an np array of size (batch_size, max_batch_length, self.hidden_dim)
             batch_train_X = np.array(batch_train_X).reshape(
-                (temp_batch_size, batch_max_size, self.input_dim))
+                (temp_batch_size, self.sentence_length, self.input_dim))
             batch_train_Y = np.array(training_Y[start_index: end_index])
             batch_training_X.append(batch_train_X)
             batch_training_Y.append(batch_train_Y)
@@ -197,11 +214,11 @@ class RNN:
 
                 # Feed Forwarding
                 preds, states = self.forward(train_X)
-                                       
+                
                 loss -= np.sum(np.log([pred[train_Y[index]]
                                        for index, pred in enumerate(preds.T)]))
                 num_correct += np.sum(np.argmax(preds, axis = 0) == train_Y)
-
+                
                 # Back propagating the error
                 self.backPropagate(train_X, train_Y, preds, states, batch_size)
 
@@ -224,10 +241,11 @@ class RNN:
 
                 # Testing on testing data one by one 
                 for index in range(testing_size):
-                    test_X = np.array(testing_X[index]).reshape(1, len(testing_X[index]), self.input_dim)
+                    test_X = testing_X[index]
                     test_Y = [testing_Y[index]]
 
                     # Transposing the input data
+                    test_X = np.array(test_X).reshape((1, self.sentence_length, self.input_dim))
                     test_X = np.transpose(test_X, (1, 2, 0))
 
                     # Feed Forwarding
@@ -263,6 +281,7 @@ class RNN:
             'input_dim': self.input_dim,
             'output_dim': self.output_dim,
             'hidden_dim': self.hidden_dim,
+            'sentence_length' : self.sentence_length,
             'Whh': self.Whh,
             'Whx': self.Whx,
             'Wyh': self.Wyh,
@@ -308,11 +327,13 @@ class RNN:
         self.input_dim = weights['input_dim']
         self.output_dim = weights['output_dim']
         self.hidden_dim = weights['hidden_dim']
+        self.sentence_length = weights['sentence_length']
 
         print("Loaded weights from path : {} successfully".format(save_path))
 
     def predict(self, words):
         inputs = self.createInputs(words)
-        inputs = np.array(inputs).reshape(1, len(inputs), self.input_dim)
+        inputs = np.array(inputs).reshape(1, self.sentence_length, self.input_dim)
         inputs = np.transpose(inputs, (1, 2, 0))
-        return self.forward(inputs)
+        preds, states = self.forward(inputs)
+        return preds

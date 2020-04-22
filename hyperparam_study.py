@@ -16,19 +16,20 @@ train_data = toy_data.train_data
 test_data = toy_data.test_data
 
 # Iterating through hyper parameters and saving data and plots
-learning_rate_min = 0.0001
-learning_rate_max = 0.01
-learning_rate_steps = 8
-batch_size_min = 1
-batch_size_max = 24
-batch_size_steps = 15
-hidden_dim_min = 1
-hidden_dim_max = 64
+learning_rate_min = 0.001
+learning_rate_max = 0.1
+learning_rate_steps = 5
+batch_size_min = 20
+batch_size_max = 40
+batch_size_steps = 5
+hidden_dim_min = 16
+hidden_dim_max = 256
 hidden_dim_steps = 10
 
 # Defining non variable hyper parameters
 output_dim = 2
-epoch_multiplier = 5001
+epochs = 1001
+sentence_length = 10
 hyper_params = []
 
 # Total number of models that will be trained
@@ -54,11 +55,8 @@ for learning_rate in np.linspace(learning_rate_min, learning_rate_max, learning_
             weights_path = base_path + folder_path + "weights.pkl"
             if not os.path.exists(weights_path):
 
-                # Making epochs a function of batch size
-                epochs = batch_size * epoch_multiplier
-
                 # Creating an RNN
-                rnn = RNN(word2vec, embedding_dim, output_dim, hidden_dim = hidden_dim, learning_rate = learning_rate)
+                rnn = RNN(word2vec, embedding_dim, output_dim, sentence_length, hidden_dim = hidden_dim, learning_rate = learning_rate)
 
                 # Training the model
                 start_time = time.time()
@@ -95,7 +93,7 @@ for learning_rate in np.linspace(learning_rate_min, learning_rate_max, learning_
 
                 hyper_params.append(param_data)
 
-                print("\n Finished training model number {}  with params :   ").format(model_number)
+                print("\n Finished training model {} / {}  with params :   ").format(model_number, total_models)
                 pp.pprint(param_data)
 
             else:

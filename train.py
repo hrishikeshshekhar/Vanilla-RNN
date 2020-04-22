@@ -9,26 +9,30 @@ test_data = toy_data.test_data
 
 # Defining hyper parameters
 learning_rate = 0.001
-hidden_dim = 64
-batch_size = 5
+hidden_dim = 16
+batch_size = 1
 output_dim = 2
+sentence_length = 10
 
 # Creating an rnn
-rnn = RNN(word2vec, embedding_dim, output_dim, hidden_dim = hidden_dim, learning_rate = learning_rate)
+rnn = RNN(word2vec, embedding_dim, output_dim, sentence_length,
+          hidden_dim=hidden_dim, learning_rate=learning_rate)
 
 # Displaying a summary of the model
 rnn.summary()
 
 # Loading data
-save_path = "./weights/weight_data_" + str(batch_size) + "_" + str(hidden_dim) + "_" + str(learning_rate) + ".pkl"
+save_path = "./weights/weight_data_" + \
+    str(batch_size) + "_" + str(hidden_dim) + "_" + str(learning_rate) + ".pkl"
 try:
     rnn.load_weights(save_path)
 except:
     print("No weights exist in path : {}").format(save_path)
 
 # Training the rnn
-epochs = 50001
-losses, correct_values = rnn.train(train_data, test_data, epochs, verbose=True, batch_size=batch_size)
+epochs = 1001
+losses, correct_values = rnn.train(
+    train_data, test_data, epochs, verbose=True, batch_size=batch_size)
 
 # Saving the weights
 rnn.save_weights(save_path)
@@ -46,13 +50,11 @@ plt.ylabel("Correct classification percentage")
 plt.show()
 
 # Testing the RNN by forwarding sentences
-preds1, _ = rnn.predict("i am good right now")
-preds2, _ = rnn.predict("this was very good earlier")
-preds3, _ = rnn.predict("i am very bad")
-preds4, _ = rnn.predict("this is very sad")
+tests = [
+    "Happy",
+    "I am very happy",
+    "I am very bad",
+    "This is very sad"
+]
 
-print("True probabilies for ")
-print(preds1)
-print(preds2)
-print(preds3)
-print(preds4)
+preds = [rnn.predict(test) for test in tests]
