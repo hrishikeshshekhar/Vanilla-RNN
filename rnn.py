@@ -12,10 +12,15 @@ class RNN:
         self.learning_rate = learning_rate
         self.word2vec = word2vec
 
+        # Calculating xavier initializer constants
+        whx = math.sqrt(6) / math.sqrt(self.hidden_dim + self.input_dim)
+        whh = math.sqrt(6) / math.sqrt(self.hidden_dim + self.hidden_dim)
+        wyh = math.sqrt(6) / math.sqrt(self.output_dim + self.hidden_dim)
+
         # Creating the initial weights
-        self.Whx = np.random.normal(0, 1, (hidden_dim, input_dim))
-        self.Whh = np.random.normal(0, 1, (hidden_dim, hidden_dim))
-        self.Wyh = np.random.normal(0, 1, (output_dim, hidden_dim))
+        self.Whx = np.random.uniform(-whx, whx, (hidden_dim, input_dim))
+        self.Whh = np.random.uniform(-whh, whh, (hidden_dim, hidden_dim))
+        self.Wyh = np.random.uniform(-wyh, wyh, (output_dim, hidden_dim))
 
         # Creating the initial biases
         self.bh = np.random.normal(0, 1, (hidden_dim, 1))
