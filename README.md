@@ -18,10 +18,10 @@
 - [X] Save and load weights
 - [X] Interactive command line for testing
 - [X] Experiment with better initializers (Xavier Initializer)
+- [X] Extract IMBD Reviews data
+- [ ] Train on IMBD Reviews
 - [ ] Check for vanishing and exploding gradients
 - [ ] Add regularization (Dropout, L1, L2)
 - [ ] Conduct study for hyper parameter tuning
-- [ ] Parse IMBD Reviews
-- [ ] Train on IMBD Reviews
 - [ ] Create API for sentiment classification
 - [ ] GPU support

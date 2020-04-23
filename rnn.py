@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import string
 import sys
 import math
 
@@ -27,17 +28,37 @@ class RNN:
         self.bh = np.random.normal(0, 1, (hidden_dim, 1))
         self.by = np.random.normal(0, 1, (output_dim, 1))
 
-    def createInputs(self, words):
-        # Lowercasing all the words
-        words = words.lower()
+    def remove_punctuation(self, sentence):
+        output = ""
+        for symbol in sentence:
+            if(symbol in string.punctuation):
+                output.join(" ")
+            else:
+                output.join(symbol)
+        return output
+
+    def tokenize(self, input_sentence):
+        # Splitting into difference sentences
+        words = []
+        for sentence in input_sentence.split('.'):
+            sentence = self.remove_punctuation(sentence)
+            for word in sentence.split(' '):
+                if(len(word) > 0):
+                    words.append(word.lower())
+
+        return words
+
+    def createInputs(self, sentence):
+        # Cleaning the inputs
+        words = self.tokenize(sentence)
         inputs = []
 
-        for word in words.split(' '):
+        for index, word in enumerate(words):
             try:
                 vec = self.word2vec[word]
                 inputs.append(vec)
             except:
-                print("Word {} doesn't exist in glove word to vec").format(word)
+                print("Word {} with index {} doesn't exist in glove word to vec").format(word, index)
                 inputs.append(np.zeros(self.hidden_dim))
 
         # Padding the inputs
@@ -167,10 +188,16 @@ class RNN:
         testing_size = len(testing_data)
 
         # Converting training and testing data into numpy arrays
+        print("Pre - processing the training data")
         training_X = [self.createInputs(line) for line in training_data.keys()]
         training_Y = [int(target) for target in training_data.values()]
-        testing_X = [self.createInputs(line) for line in testing_data.keys()]
-        testing_Y = [int(target) for target in testing_data.values()]
+
+        print("Size of training data : {}").format(sys.getsizeof(training_X) + sys.getsizeof(training_Y))
+
+        print("Pre - processing the testing data")
+        testing_X = np.array([self.createInputs(line) for line in testing_data.keys()]).transpose((1, 2, 0))
+        testing_Y = np.array([int(target) for target in testing_data.values()])
+        print("Size of testing data : {}").format(sys.getsizeof(testing_X) + sys.getsizeof(testing_Y))
 
         # Splitting the training data into batches of size batchsize
         batches = int(math.ceil(float(training_size) / batch_size))
@@ -239,22 +266,13 @@ class RNN:
                 loss = 0
                 num_correct = 0
 
-                # Testing on testing data one by one 
-                for index in range(testing_size):
-                    test_X = testing_X[index]
-                    test_Y = [testing_Y[index]]
+                # Feed Forwarding
+                preds, states= self.forward(testing_X)
 
-                    # Transposing the input data
-                    test_X = np.array(test_X).reshape((1, self.sentence_length, self.input_dim))
-                    test_X = np.transpose(test_X, (1, 2, 0))
-
-                    # Feed Forwarding
-                    preds, states= self.forward(test_X)
-
-                    # Calculating the loss and correct classifications
-                    loss -= np.sum(np.log([pred[test_Y[index]]
+                # Calculating the loss and correct classifications
+                loss -= np.sum(np.log([pred[testing_Y[index]]
                                         for index, pred in enumerate(preds.T)]))
-                    num_correct += np.sum(np.argmax(preds) == test_Y)
+                num_correct += np.sum(np.argmax(preds) == testing_Y)
 
                 print("                            ")
                 print("TESTING_DATA")

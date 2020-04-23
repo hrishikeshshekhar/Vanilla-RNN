@@ -2,17 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from rnn import RNN
-from data import imbd_data, word2vec, embedding_dim
+from data import toy_data, word2vec, embedding_dim
 
-train_data = imbd_data.train_data
-test_data = imbd_data.test_data
+train_data = toy_data.train_data
+test_data = toy_data.test_data
 
 # Defining hyper parameters
 learning_rate = 0.001
 hidden_dim = 64
-batch_size = 128
+batch_size = 20
 output_dim = 2
-sentence_length = 40
+sentence_length = 10
 
 # Creating an rnn
 rnn = RNN(word2vec, embedding_dim, output_dim, sentence_length,
