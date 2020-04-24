@@ -19,9 +19,10 @@
 - [X] Interactive command line for testing
 - [X] Experiment with better initializers (Xavier Initializer)
 - [X] Extract IMBD Reviews data
-- [ ] Train on IMBD Reviews
+- [X] Train on IMBD Reviews
+- [X] Conduct study for hyper parameter tuning
 - [ ] Check for vanishing and exploding gradients
 - [ ] Add regularization (Dropout, L1, L2)
-- [ ] Conduct study for hyper parameter tuning
 - [ ] Create API for sentiment classification
 - [ ] GPU support
+- [ ] Compare results with Tensorflow's RNN, LSTM module

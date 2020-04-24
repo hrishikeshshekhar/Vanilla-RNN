@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from rnn import RNN
-from data import toy_data, word2vec, embedding_dim
+from embedding import embeddings
+from data import toy_data
 
 train_data = toy_data.train_data
 test_data = toy_data.test_data
@@ -10,12 +11,16 @@ test_data = toy_data.test_data
 # Defining hyper parameters
 learning_rate = 0.001
 hidden_dim = 64
-batch_size = 20
+batch_size = 15
 output_dim = 2
 sentence_length = 10
+embedding_dim = 50
+
+# Creating an embeddings class object
+embedding = embeddings(sentence_length, embedding_dim=embedding_dim)
 
 # Creating an rnn
-rnn = RNN(word2vec, embedding_dim, output_dim, sentence_length,
+rnn = RNN(embedding_dim, output_dim, sentence_length,
           hidden_dim=hidden_dim, learning_rate=learning_rate)
 
 # Displaying a summary of the model
@@ -29,10 +34,16 @@ try:
 except:
     print("No weights exist in path : {}").format(save_path)
 
-# Training the rnn
-epochs = 1001
+# Perparing the input data
+train_X = embedding.get_data_from_list(train_data.keys())
+train_Y = train_data.values()
+test_X = embedding.get_data_from_list(test_data.keys())
+test_Y = test_data.values()
+
+# # Training the rnn
+epochs = 2001
 losses, correct_values = rnn.train(
-    train_data, test_data, epochs, verbose=True, batch_size=batch_size)
+    train_X, train_Y, test_X, test_Y, epochs, verbose=True, batch_size=batch_size)
 
 # Saving the weights
 rnn.save_weights(save_path)
@@ -57,4 +68,7 @@ tests = [
     "This is very sad"
 ]
 
-preds = [rnn.predict(test) for test in tests]
+test_data = embedding.get_data_from_list(tests)
+preds = rnn.predict(test_data)
+print("Testing data : {}").format(tests)
+print("Predictions  : {}").format(preds)
