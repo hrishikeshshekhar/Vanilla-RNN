@@ -6,12 +6,14 @@ import math
 
 
 class RNN:
-    def __init__(self, input_dim, output_dim, sentence_length, hidden_dim=64, learning_rate=0.001):
+    def __init__(self, input_dim, output_dim, sentence_length, hidden_dim=64, learning_rate=0.001, momentum=0.9):
+        self.epochs = 1
+        self.beta = momentum
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
         self.learning_rate = learning_rate
-        self.sentence_length = sentence_length
+        self.sentence_length = sentence_length 
 
         # Calculating xavier initializer constants
         whx = math.sqrt(6) / math.sqrt(self.hidden_dim + self.input_dim)
@@ -20,12 +22,17 @@ class RNN:
 
         # Creating the initial weights
         self.Whx = np.random.uniform(-whx, whx, (hidden_dim, input_dim))
+        self.dWhx = np.zeros((hidden_dim, input_dim))
         self.Whh = np.random.uniform(-whh, whh, (hidden_dim, hidden_dim))
+        self.dWhh = np.zeros((hidden_dim, hidden_dim))
         self.Wyh = np.random.uniform(-wyh, wyh, (output_dim, hidden_dim))
+        self.dWyh = np.zeros((output_dim, hidden_dim))
 
         # Creating the initial biases
         self.bh = np.random.normal(0, 1, (hidden_dim, 1))
+        self.dbh = np.zeros((hidden_dim, 1))
         self.by = np.random.normal(0, 1, (output_dim, 1))
+        self.dby = np.zeros((output_dim, 1))
 
     # Performs feed forward on the RNN
     def forward(self, data):
@@ -108,17 +115,25 @@ class RNN:
             # Updating dL_dh
             dL_dh = np.matmul(self.Whh, dL_dh * (1 - states[t + 1] ** 2))
 
-        # Clipping the gradients for exploding gradients
-        for updates in [dL_dWhh, dL_dWhx, dL_dbh, dL_dWyh, dL_dby]:
-            updates *= self.learning_rate
-            np.clip(updates, -1, 1, out=updates)
+        # Applying momentum and normalizing
+        normalization_factor = 1 - (self.beta ** min(self.epochs, 100))
+        normalization_factor = 1
+        self.dWhh = (self.beta * self.dWhh + (1 - self.beta) * (dL_dWhh)) / normalization_factor
+        self.dWhx = (self.beta * self.dWhx + (1 - self.beta) * (dL_dWhx)) / normalization_factor
+        self.dWyh = (self.beta * self.dWyh + (1 - self.beta) * (dL_dWyh)) / normalization_factor
+        self.dbh  = (self.beta * self.dbh + (1 - self.beta) * (dL_dbh)) / normalization_factor
+        self.dby  = (self.beta * self.dby + (1 - self.beta) * (dL_dby)) / normalization_factor
 
+        # Clipping the gradients for exploding gradients
+        for updates in [self.dWhh, self.dWhx, self.Wyh, self.dbh, self.dby]:
+            np.clip(updates, -1, 1, out=updates)
+        
         # Updating the weights and biases
-        self.Whh -= dL_dWhh
-        self.Whx -= dL_dWhx
-        self.Wyh -= dL_dWyh
-        self.bh -= dL_dbh
-        self.by -= dL_dby
+        self.Whh -= self.learning_rate * self.dWhh
+        self.Whx -= self.learning_rate * self.dWhx
+        self.Wyh -= self.learning_rate * self.dWyh
+        self.bh  -= self.learning_rate * self.dbh
+        self.by  -= self.learning_rate * self.dby
 
     def train(self, train_X, train_Y, test_X, test_Y, epochs, verbose=False, batch_size=32):
         # Checking params
@@ -191,7 +206,6 @@ class RNN:
             batch_train_X = train_X[start_index: end_index]
 
             # Creating an np array of size (batch_size, max_batch_length, self.hidden_dim)
-            print("Sentence length : {}").format(self.sentence_length)
             batch_train_X = np.array(batch_train_X).reshape(
                 (temp_batch_size, self.sentence_length, self.input_dim))
             batch_train_Y = np.array(train_Y[start_index: end_index])
@@ -221,7 +235,8 @@ class RNN:
                 # Feed Forwarding
                 preds, states = self.forward(train_X)
 
-                loss -= np.sum(np.log([pred[train_Y[index]] for index, pred in enumerate(preds.T)]))
+                loss -= np.sum(np.log([pred[train_Y[index]]
+                                       for index, pred in enumerate(preds.T)]))
                 num_correct += np.sum(np.argmax(preds, axis=0) == train_Y)
 
                 # Back propagating the error
@@ -248,7 +263,8 @@ class RNN:
                 preds, states = self.forward(test_X)
 
                 # Calculating the loss and correct classifications
-                loss -= np.sum(np.log([pred[test_Y[index]] for index, pred in enumerate(preds.T)]))
+                loss -= np.sum(np.log([pred[test_Y[index]]
+                                       for index, pred in enumerate(preds.T)]))
                 num_correct += np.sum(np.argmax(preds, axis=0) == test_Y)
 
                 print("                            ")
@@ -256,6 +272,9 @@ class RNN:
                 print("Loss : {}").format(loss / testing_size)
                 print("Correctly classified : {} percent of data").format(
                     100 * float(num_correct) / testing_size)
+
+            # Updating epoch number
+            self.epochs += 1
 
         return losses, correct_ans
 
@@ -295,7 +314,8 @@ class RNN:
 
         # Checking whether model created has input and output dims the same as the loaded file
         if(self.input_dim != weights['input_dim'] or self.hidden_dim != weights['hidden_dim'] or self.output_dim != weights['output_dim']):
-            print("Warning : The dimensions of your current model and the loaded model do not match")
+            print(
+                "Warning : The dimensions of your current model and the loaded model do not match")
             print("Your model dimensions : \n")
             print("Input Dimension : {}").format(self.input_dim)
             print("Hidden Dimension : {}").format(self.hidden_dim)
@@ -315,8 +335,9 @@ class RNN:
 
         # Checking if the sentence length of loaded model matches the current model
         if(weights['sentence_length'] != self.sentence_length):
-            print("Warning : The sentence length of your current model and the loaded model do not match")
-            
+            print(
+                "Warning : The sentence length of your current model and the loaded model do not match")
+
             text = raw_input(" Enter [Y] to continue to load model : \t")
 
             if(text != "Y" and text != "y"):

@@ -10,6 +10,7 @@ test_data = toy_data.test_data
 
 # Defining hyper parameters
 learning_rate = 0.001
+momentum = 0.9
 hidden_dim = 64
 batch_size = 15
 output_dim = 2
@@ -27,7 +28,7 @@ rnn = RNN(embedding_dim, output_dim, sentence_length,
 rnn.summary()
 
 # Loading data
-save_path = "./weights/weight_data_" + \
+save_path = "./weights/toy_data/weight_data_" + \
     str(batch_size) + "_" + str(hidden_dim) + "_" + str(learning_rate) + ".pkl"
 try:
     rnn.load_weights(save_path)

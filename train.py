@@ -10,12 +10,12 @@ test_data = imbd_data.test_data
 
 # Defining hyper parameters
 learning_rate = 0.001
-hidden_dim = 64
+hidden_dim = 128
 batch_size = 128
 output_dim = 2
-num_training_data = 2000
-num_testing_data = 100
-sentence_length = 40
+num_training_data = 10000
+num_testing_data = 500
+sentence_length = 50
 embedding_dim = 50
 
 # Creating an embeddings class object
@@ -29,7 +29,7 @@ rnn = RNN(embedding_dim, output_dim, sentence_length,
 rnn.summary()
 
 # Loading data
-save_path = "./weights/weight_data_" + \
+save_path = "./weights/imbd_data/weight_data_" + \
     str(batch_size) + "_" + str(hidden_dim) + "_" + \
     str(learning_rate) + '_' + str(sentence_length) + ".pkl"
 try:
@@ -44,7 +44,7 @@ test_X = embedding.get_data_from_list(test_data.keys()[:num_testing_data])
 test_Y = test_data.values()[:num_testing_data]
 
 # Training the rnn
-epochs = 5001
+epochs = 101
 losses, correct_values = rnn.train(
     train_X, train_Y, test_X, test_Y, epochs, verbose=True, batch_size=batch_size)
 
@@ -71,4 +71,7 @@ tests = [
     "This is very sad"
 ]
 
-preds = [rnn.predict(test) for test in tests]
+test_data = embedding.get_data_from_list(tests)
+preds = rnn.predict(test_data)
+print("Testing data : {}").format(tests)
+print("Predictions  : {}").format(preds)
