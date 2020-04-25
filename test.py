@@ -1,18 +1,23 @@
 from rnn import RNN 
-from data import toy_data, word2vec, embedding_dim
+from embedding import embeddings
+from data import toy_data
 
 # Loading toy data
 train_data = toy_data.train_data
 test_data  = toy_data.test_data
 output_dim = 2
 sentence_length = 10
+embedding_dim = 50
 hidden_dim = 256
 
+# Creating an embeddings class
+embedding = embeddings(sentence_length, embedding_dim=embedding_dim)
+
 # Creating an rnn
-rnn = RNN(word2vec, embedding_dim, output_dim, sentence_length, hidden_dim=hidden_dim)
+rnn = RNN(embedding_dim, output_dim, sentence_length, hidden_dim=hidden_dim)
 
 # Loading the weights
-save_path = "./weights/weight_data_30_256_0.001.pkl"
+save_path = "./weights/toy_data/weight_data_30_256_0.001.pkl"
 rnn.load_weights(save_path)
 
 while(1):

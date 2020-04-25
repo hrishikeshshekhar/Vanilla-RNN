@@ -18,6 +18,7 @@
 - [X] Save and load weights
 - [X] Interactive command line for testing
 - [X] Experiment with better initializers (Xavier Initializer)
+- [X] Analyse IMBD Reviews dataset 
 - [X] Extract IMBD Reviews data
 - [X] Train on IMBD Reviews
 - [X] Conduct study for hyper parameter tuning
