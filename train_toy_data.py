@@ -10,8 +10,8 @@ test_data = toy_data.test_data
 
 # Defining hyper parameters
 learning_rate = 0.001
-momentum = 0.9
 hidden_dim = 64
+optimizer = "rmsprop"
 batch_size = 15
 output_dim = 2
 sentence_length = 10
@@ -21,15 +21,16 @@ embedding_dim = 50
 embedding = embeddings(sentence_length, embedding_dim=embedding_dim)
 
 # Creating an rnn
-rnn = RNN(embedding_dim, output_dim, sentence_length,
+rnn = RNN(embedding_dim, output_dim, sentence_length, optimizer=optimizer,
           hidden_dim=hidden_dim, learning_rate=learning_rate)
 
 # Displaying a summary of the model
 rnn.summary()
 
 # Loading data
-save_path = "./weights/toy_data/weight_data_" + \
-    str(batch_size) + "_" + str(hidden_dim) + "_" + str(learning_rate) + ".pkl"
+save_path = "./weights/imbd_data/weight_data_" + \
+    optimizer + str(batch_size) + "_" + str(hidden_dim) + "_" + \
+    str(learning_rate) + '_' + str(sentence_length) + ".pkl"
 try:
     rnn.load_weights(save_path)
 except:
@@ -42,7 +43,7 @@ test_X = embedding.get_data_from_list(test_data.keys())
 test_Y = test_data.values()
 
 # # Training the rnn
-epochs = 2001
+epochs = 100
 losses, correct_values = rnn.train(
     train_X, train_Y, test_X, test_Y, epochs, verbose=True, batch_size=batch_size)
 
