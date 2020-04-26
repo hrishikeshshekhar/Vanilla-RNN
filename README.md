@@ -18,9 +18,8 @@
 - [X] Save and load weights
 - [X] Interactive command line for testing
 - [X] Experiment with better initializers (Xavier Initializer)
-- [X] Analyse IMBD Reviews dataset 
-- [X] Extract IMBD Reviews data
-- [X] Train on IMBD Reviews
+- [X] Experiment with different optimizers (SGD, Batch GD, Momentum, RMSProp)
+- [X] Extract, analyse and train on IMBD Reviews
 - [X] Conduct study for hyper parameter tuning
 - [ ] Check for vanishing and exploding gradients
 - [ ] Add regularization (Dropout, L1, L2)

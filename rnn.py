@@ -6,33 +6,74 @@ import math
 
 
 class RNN:
-    def __init__(self, input_dim, output_dim, sentence_length, hidden_dim=64, learning_rate=0.001, momentum=0.9):
-        self.epochs = 1
-        self.beta = momentum
+    def __init__(self, input_dim, output_dim, sentence_length, initializer="normal", optimizer="gd", hidden_dim=64, learning_rate=0.001, momentum=0.9, beta=0.9):
+        # Checking if the optimizer is a valid optimizer
+        valid_optimizers = ["gd", "momentum", "rmsprop"]
+        try:
+            assert(optimizer in valid_optimizers)
+        except:
+            print("Available optimizers are : {}").format(valid_optimizers)
+            raise ValueError("Cannot recognize optimizer : {}").format(optimizer)
+        
+        # Checking if the initializer is a valid initializer
+        valid_initializers = ["normal", "xavier"]
+        try:
+            assert(initializer in valid_initializers)
+        except:
+            print("Available initializers are : {}").format(valid_initializers)
+            raise ValueError("Cannot recognize initializer : {}").format(initializer)
+
+        self.minibatches = 1
+        self.beta1 = momentum
+        self.beta2 = beta
+        self.optimizer = optimizer
+        self.initializer = initializer
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
         self.learning_rate = learning_rate
-        self.sentence_length = sentence_length 
+        self.sentence_length = sentence_length
 
         # Calculating xavier initializer constants
-        whx = math.sqrt(6) / math.sqrt(self.hidden_dim + self.input_dim)
-        whh = math.sqrt(6) / math.sqrt(self.hidden_dim + self.hidden_dim)
-        wyh = math.sqrt(6) / math.sqrt(self.output_dim + self.hidden_dim)
+        if(self.initializer == "xavier"):
+            whx = math.sqrt(6) / math.sqrt(self.hidden_dim + self.input_dim)
+            whh = math.sqrt(6) / math.sqrt(self.hidden_dim + self.hidden_dim)
+            wyh = math.sqrt(6) / math.sqrt(self.output_dim + self.hidden_dim)
 
-        # Creating the initial weights
-        self.Whx = np.random.uniform(-whx, whx, (hidden_dim, input_dim))
-        self.dWhx = np.zeros((hidden_dim, input_dim))
-        self.Whh = np.random.uniform(-whh, whh, (hidden_dim, hidden_dim))
-        self.dWhh = np.zeros((hidden_dim, hidden_dim))
-        self.Wyh = np.random.uniform(-wyh, wyh, (output_dim, hidden_dim))
-        self.dWyh = np.zeros((output_dim, hidden_dim))
+            # Creating the initial weights
+            self.Whx = np.random.uniform(-whx, whx, (hidden_dim, input_dim))
+            self.Whh = np.random.uniform(-whh, whh, (hidden_dim, hidden_dim))
+            self.Wyh = np.random.uniform(-wyh, wyh, (output_dim, hidden_dim))
 
-        # Creating the initial biases
-        self.bh = np.random.normal(0, 1, (hidden_dim, 1))
-        self.dbh = np.zeros((hidden_dim, 1))
-        self.by = np.random.normal(0, 1, (output_dim, 1))
-        self.dby = np.zeros((output_dim, 1))
+            # Creating the initial biases
+            self.bh   = np.random.normal(0, 1, (hidden_dim, 1))
+            self.by = np.random.normal(0, 1, (output_dim, 1))
+        
+        elif(self.initializer == "normal"):
+            # Creating the initial weights
+            self.Whx = np.random.normal(0, 1, (hidden_dim, input_dim))
+            self.Whh = np.random.normal(0, 1, (hidden_dim, hidden_dim))
+            self.Wyh = np.random.normal(0, 1, (output_dim, hidden_dim))
+
+            # Creating the initial biases
+            self.bh   = np.random.normal(0, 1, (hidden_dim, 1))
+            self.by   = np.random.normal(0, 1, (output_dim, 1))
+
+        # Creating variables to store exponential averages for momentum
+        if(self.optimizer == "momentum"):
+            self.dWhx = np.zeros((hidden_dim, input_dim))
+            self.dWhh = np.zeros((hidden_dim, hidden_dim))
+            self.dWyh = np.zeros((output_dim, hidden_dim))
+            self.dbh = np.zeros((hidden_dim, 1))
+            self.dby  = np.zeros((output_dim, 1))
+        
+        # Creating variables to save exponential averages for RMS prop
+        elif(self.optimizer == "rmsprop"):
+            self.sWhx = np.zeros((hidden_dim, input_dim))
+            self.sWhh = np.zeros((hidden_dim, hidden_dim))
+            self.sWyh = np.zeros((output_dim, hidden_dim))
+            self.sbh = np.zeros((hidden_dim, 1))
+            self.sby  = np.zeros((output_dim, 1))
 
     # Performs feed forward on the RNN
     def forward(self, data):
@@ -115,25 +156,57 @@ class RNN:
             # Updating dL_dh
             dL_dh = np.matmul(self.Whh, dL_dh * (1 - states[t + 1] ** 2))
 
+        if(self.optimizer == "gd"):
+            # Clipping the gradients for exploding gradients
+            for updates in [dL_dWhh, dL_dWhx, dL_dWyh, dL_dbh, dL_dby]:
+                np.clip(updates, -1, 1, out=updates)
+            
+            # Updating the weights and biases
+            self.Whh -= self.learning_rate * dL_dWhh
+            self.Whx -= self.learning_rate * dL_dWhx
+            self.Wyh -= self.learning_rate * dL_dWyh
+            self.bh  -= self.learning_rate * dL_dbh
+            self.by  -= self.learning_rate * dL_dby
+            
         # Applying momentum and normalizing
-        normalization_factor = 1 - (self.beta ** min(self.epochs, 100))
-        normalization_factor = 1
-        self.dWhh = (self.beta * self.dWhh + (1 - self.beta) * (dL_dWhh)) / normalization_factor
-        self.dWhx = (self.beta * self.dWhx + (1 - self.beta) * (dL_dWhx)) / normalization_factor
-        self.dWyh = (self.beta * self.dWyh + (1 - self.beta) * (dL_dWyh)) / normalization_factor
-        self.dbh  = (self.beta * self.dbh + (1 - self.beta) * (dL_dbh)) / normalization_factor
-        self.dby  = (self.beta * self.dby + (1 - self.beta) * (dL_dby)) / normalization_factor
+        elif(self.optimizer == "momentum"):
+            # Calculating exponential averages
+            normalization_factor = 1 - (self.beta1 ** min(self.minibatches, 100))
+            self.dWhh = (self.beta1 * self.dWhh + (1 - self.beta1) * (dL_dWhh)) / normalization_factor
+            self.dWhx = (self.beta1 * self.dWhx + (1 - self.beta1) * (dL_dWhx)) / normalization_factor
+            self.dWyh = (self.beta1 * self.dWyh + (1 - self.beta1) * (dL_dWyh)) / normalization_factor
+            self.dbh  = (self.beta1 * self.dbh + (1 - self.beta1) * (dL_dbh)) / normalization_factor
+            self.dby  = (self.beta1 * self.dby + (1 - self.beta1) * (dL_dby)) / normalization_factor
 
-        # Clipping the gradients for exploding gradients
-        for updates in [self.dWhh, self.dWhx, self.Wyh, self.dbh, self.dby]:
-            np.clip(updates, -1, 1, out=updates)
-        
-        # Updating the weights and biases
-        self.Whh -= self.learning_rate * self.dWhh
-        self.Whx -= self.learning_rate * self.dWhx
-        self.Wyh -= self.learning_rate * self.dWyh
-        self.bh  -= self.learning_rate * self.dbh
-        self.by  -= self.learning_rate * self.dby
+            # Clipping the gradients for exploding gradients
+            for updates in [self.dWhh, self.dWhx, self.dWyh, self.dbh, self.dby]:
+                np.clip(updates, -1, 1, out=updates)
+            
+            # Updating the weights and biases
+            self.Whh -= self.learning_rate * self.dWhh
+            self.Whx -= self.learning_rate * self.dWhx
+            self.Wyh -= self.learning_rate * self.dWyh
+            self.bh  -= self.learning_rate * self.dbh
+            self.by  -= self.learning_rate * self.dby
+    
+        # Applying RMS Prop
+        elif(self.optimizer == "rmsprop"):
+            self.sWhh = (self.beta2 * self.sWhh + (1 - self.beta2) * (dL_dWhh ** 2)) 
+            self.sWhx = (self.beta2 * self.sWhx + (1 - self.beta2) * (dL_dWhx ** 2)) 
+            self.sWyh = (self.beta2 * self.sWyh + (1 - self.beta2) * (dL_dWyh ** 2)) 
+            self.sbh  = (self.beta2 * self.sbh + (1 - self.beta2) * (dL_dbh ** 2)) 
+            self.sby  = (self.beta2 * self.sby + (1 - self.beta2) * (dL_dby ** 2)) 
+
+            # Clipping the gradients for exploding gradients
+            for updates in [self.sWhh, self.sWhx, self.sWyh, self.sbh, self.sby]:
+                np.clip(updates, -1, 1, out=updates)
+
+            # Updating the weights and biases
+            self.Whh -= self.learning_rate * (dL_dWhh / np.sqrt(self.sWhh))
+            self.Whx -= self.learning_rate * (dL_dWhx / np.sqrt(self.sWhx))
+            self.Wyh -= self.learning_rate * (dL_dWyh / np.sqrt(self.sWyh))
+            self.bh  -= self.learning_rate * (dL_dbh  / np.sqrt(self.sbh))
+            self.by  -= self.learning_rate * (dL_dby  / np.sqrt(self.sby))
 
     def train(self, train_X, train_Y, test_X, test_Y, epochs, verbose=False, batch_size=32):
         # Checking params
@@ -242,6 +315,9 @@ class RNN:
                 # Back propagating the error
                 self.backPropagate(train_X, train_Y, preds, states, batch_size)
 
+                # Updating the mini batch number
+                self.minibatches += 1
+
             # Appending loss to training data
             losses.append(loss)
             correct_ans.append((float(num_correct) / training_size) * 100)
@@ -273,9 +349,6 @@ class RNN:
                 print("Correctly classified : {} percent of data").format(
                     100 * float(num_correct) / testing_size)
 
-            # Updating epoch number
-            self.epochs += 1
-
         return losses, correct_ans
 
     def summary(self):
@@ -284,6 +357,9 @@ class RNN:
         print("\n ====================================================")
         print(" Total trainable parameters : {}".format(total_params))
         print(" Learning Rate : {}".format(self.learning_rate))
+        print(" Optimizer : {}").format(self.optimizer)
+        print(" Beta1 : {}").format(self.beta1)
+        print(" Beta2 : {}").format(self.beta2)
         print(" Input dimension : {}".format(self.input_dim))
         print(" Output dimension : {}".format(self.output_dim))
         print(" Hidden dimension : {}".format(self.hidden_dim))
@@ -296,6 +372,7 @@ class RNN:
             'output_dim': self.output_dim,
             'hidden_dim': self.hidden_dim,
             'sentence_length': self.sentence_length,
+            'minibatches' : self.minibatches,
             'Whh': self.Whh,
             'Whx': self.Whx,
             'Wyh': self.Wyh,
@@ -351,6 +428,7 @@ class RNN:
         self.Wyh = weights['Wyh']
         self.bh = weights['bh']
         self.by = weights['by']
+        self.minibatches = weights['minibatches']
         self.input_dim = weights['input_dim']
         self.output_dim = weights['output_dim']
         self.hidden_dim = weights['hidden_dim']
