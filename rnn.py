@@ -12,16 +12,16 @@ class RNN:
         try:
             assert(optimizer in valid_optimizers)
         except:
-            print("Available optimizers are : {}").format(valid_optimizers)
-            raise ValueError("Cannot recognize optimizer : {}").format(optimizer)
+            print("Available optimizers are : {}".format(valid_optimizers))
+            raise ValueError("Cannot recognize optimizer : {}".format(optimizer))
         
         # Checking if the initializer is a valid initializer
         valid_initializers = ["normal", "xavier"]
         try:
             assert(initializer in valid_initializers)
         except:
-            print("Available initializers are : {}").format(valid_initializers)
-            raise ValueError("Cannot recognize initializer : {}").format(initializer)
+            print("Available initializers are : {}".format(valid_initializers))
+            raise ValueError("Cannot recognize initializer : {}".format(initializer))
 
         self.minibatches = 1
         self.beta1 = momentum
@@ -219,15 +219,15 @@ class RNN:
         try:
             assert(train_X.shape[0] == len(train_Y))
         except:
-            print("Number of training samples in train_X and train_Y are not equal. Number of samples in train_X is {} and {} in train_Y").format(
-                train_X.shape[0], len(train_Y))
+            print("Number of training samples in train_X and train_Y are not equal. Number of samples in train_X is {} and {} in train_Y".format(
+                train_X.shape[0], len(train_Y)))
 
         # Checking that test_X and test_Y have equal data points
         try:
             assert(test_X.shape[0] == len(test_Y))
         except:
-            print("Number of training samples in train_X and train_Y are not equal. Number of samples in train_X is {} and {} in train_Y").format(
-                test_X.shape[0], len(test_Y))
+            print("Number of training samples in train_X and train_Y are not equal. Number of samples in train_X is {} and {} in train_Y".format(
+                test_X.shape[0], len(test_Y)))
 
         # Calculating training and testing data size
         training_size = train_X.shape[0]
@@ -241,16 +241,16 @@ class RNN:
             assert(train_X.shape[1] == self.sentence_length)
             assert(train_X.shape[2] == self.input_dim)
         except:
-            print("Expected training data shape to be {} but got {}").format(
-                training_size, self.sentence_length, self.input_dim)
+            print("Expected training data shape to be {} but got {}".format(
+                training_size, self.sentence_length, self.input_dim))
 
         # Checking that the dimensions of the testing data are correct
         try:
             assert(test_X.shape[1] == self.sentence_length)
             assert(test_X.shape[2] == self.input_dim)
         except:
-            print("Expected testing data shape to be {} but got {}").format(
-                testing_size, self.sentence_length, self.input_dim)
+            print("Expected testing data shape to be {} but got {}".format(
+                testing_size, self.sentence_length, self.input_dim))
 
         # Transposing the testing data
         test_X = np.transpose(test_X, (1, 2, 0))
@@ -261,10 +261,10 @@ class RNN:
         log_frequency = max(int(float(epochs) / 100), 1)
 
         # Converting training and testing data into numpy arrays
-        print("Size of training data : {}").format(
-            sys.getsizeof(train_X) + sys.getsizeof(train_Y))
-        print("Size of testing data : {}").format(
-            sys.getsizeof(test_X) + sys.getsizeof(test_Y))
+        print("Size of training data : {}".format(
+            sys.getsizeof(train_X) + sys.getsizeof(train_Y)))
+        print("Size of testing data : {}".format(
+            sys.getsizeof(test_X) + sys.getsizeof(test_Y)))
 
         # Splitting the training data into batches of size batchsize
         batches = int(math.ceil(float(training_size) / batch_size))
@@ -325,11 +325,11 @@ class RNN:
             # Printing loss and number of correctly classified values
             if(verbose and epoch % log_frequency == 0):
 
-                print("\n\n\n Epoch : {} \n").format(epoch)
+                print("\n\n\n Epoch : {} \n".format(epoch))
                 print("TRAINING_DATA")
-                print("Loss : {}").format(loss / training_size)
-                print("Correctly classified : {} percent of data").format(
-                    100 * float(num_correct) / training_size)
+                print("Loss : {}".format(loss / training_size))
+                print("Correctly classified : {} percent of data".format(
+                    100 * float(num_correct) / training_size))
 
                 # Resetting loss and correct answers
                 loss = 0
@@ -345,25 +345,26 @@ class RNN:
 
                 print("                            ")
                 print("TESTING_DATA")
-                print("Loss : {}").format(loss / testing_size)
-                print("Correctly classified : {} percent of data").format(
-                    100 * float(num_correct) / testing_size)
+                print("Loss : {}".format(loss / testing_size))
+                print("Correctly classified : {} percent of data".format(
+                    100 * float(num_correct) / testing_size))
 
         return losses, correct_ans
 
     def summary(self):
         total_params = (self.hidden_dim * self.hidden_dim) + (self.input_dim * self.hidden_dim) + (
             self.output_dim * self.hidden_dim) + (self.hidden_dim) + (self.output_dim)
-        print("\n ====================================================")
+        print("                                                    ")
+        print(" ====================================================")
         print(" Total trainable parameters : {}".format(total_params))
         print(" Learning Rate : {}".format(self.learning_rate))
-        print(" Optimizer : {}").format(self.optimizer)
-        print(" Beta1 : {}").format(self.beta1)
-        print(" Beta2 : {}").format(self.beta2)
+        print(" Optimizer : {}".format(self.optimizer))
+        print(" Beta1 : {}".format(self.beta1))
+        print(" Beta2 : {}".format(self.beta2))
         print(" Input dimension : {}".format(self.input_dim))
         print(" Output dimension : {}".format(self.output_dim))
         print(" Hidden dimension : {}".format(self.hidden_dim))
-        print("\n ====================================================")
+        print(" ====================================================")
         print("                                                    ")
 
     def save_weights(self, save_path):
@@ -380,28 +381,28 @@ class RNN:
             'by': self.by
         }
 
-        weights_file = open(save_path, "w")
+        weights_file = open(save_path, "wb")
         pickle.dump(weights, weights_file)
 
         print("Saved weights to path : {} successfully".format(save_path))
 
     def load_weights(self, save_path):
-        weights_file = open(save_path, "r")
+        weights_file = open(save_path, "rb")
         weights = pickle.load(weights_file)
 
         # Checking whether model created has input and output dims the same as the loaded file
         if(self.input_dim != weights['input_dim'] or self.hidden_dim != weights['hidden_dim'] or self.output_dim != weights['output_dim']):
             print(
                 "Warning : The dimensions of your current model and the loaded model do not match")
-            print("Your model dimensions : \n")
-            print("Input Dimension : {}").format(self.input_dim)
-            print("Hidden Dimension : {}").format(self.hidden_dim)
-            print("Output Dimension : {} \n").format(self.output_dim)
+            print("Your model dimensions : ")
+            print("Input Dimension : {}".format(self.input_dim))
+            print("Hidden Dimension : {}".format(self.hidden_dim))
+            print("Output Dimension : {} ".format(self.output_dim))
 
-            print(" Loaded model's dimensions\n")
-            print("Input Dimension : {}").format(weights['input_dim'])
-            print("Hidden Dimension : {}").format(weights['hidden_dim'])
-            print("Output Dimension : {} \n").format(weights['output_dim'])
+            print(" Loaded model's dimensions")
+            print("Input Dimension : {}".format(weights['input_dim']))
+            print("Hidden Dimension : {}".format(weights['hidden_dim']))
+            print("Output Dimension : {} ".format(weights['output_dim']))
 
             text = raw_input(" Enter [Y] to continue to load model : \t")
 
@@ -444,8 +445,8 @@ class RNN:
             assert(words.shape[1] == self.sentence_length)
             assert(words.shape[2] == self.input_dim)
         except:
-            raise ValueError("Expected dimesion of input as {} but received dimensions {}").format(
-                (data_size, self.sentence_length, self.input_dim), words.shape)
+            raise ValueError("Expected dimesion of input as {} but received dimensions {}".format(
+                (data_size, self.sentence_length, self.input_dim), words.shape))
 
         inputs = words.reshape(data_size, self.sentence_length, self.input_dim)
         inputs = np.transpose(inputs, (1, 2, 0))
