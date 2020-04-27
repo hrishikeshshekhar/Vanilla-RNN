@@ -11,7 +11,7 @@ hidden_dim = 128
 batch_size = 128
 output_dim = 2
 optimizer = "rmsprop"
-num_files = 5000
+num_files = 10000
 sentence_length = 50
 embedding_dim = 50
 
@@ -37,7 +37,7 @@ save_path = "./weights/imbd_data/weight_data_" + \
 try:
     rnn.load_weights(save_path)
 except:
-    print("No weights exist in path : {}").format(save_path)
+    print("No weights exist in path : {}".format(save_path))
 
 # Perparing the input data
 train_X = embedding.get_data_from_list(train_X)

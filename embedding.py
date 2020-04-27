@@ -1,6 +1,8 @@
 import string
 import numpy as np
 import io
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize 
 
 # Manages all conversions of words to text
 
@@ -13,6 +15,7 @@ class embeddings:
         glove_path = "/home/hrishi/Desktop/Personal/Machine-Learning/Datasets/Word2Vecs/glove.6B." + \
             str(embedding_dim) + "d.txt"
         self.word2vec = self.loadGloveModel(glove_path)
+        self.stopwords = set(stopwords.words('english'))
         self.outlier_words = []
 
     # Helper function to load glove word2vec
@@ -24,7 +27,7 @@ class embeddings:
             word = splitLine[0]
             embedding = np.array([float(val) for val in splitLine[1:]])
             model[word] = embedding
-        print("{} words loaded!").format(len(model))
+        print("{} words loaded!".format(len(model)))
 
         return model
 
@@ -38,17 +41,21 @@ class embeddings:
                 output +=  symbol
         return output
 
-    def tokenize(self, input_sentence):
-        # Splitting into difference sentences
-        words = []
-        for sentence in input_sentence.split('.'):
-            # Removing all other punctuation from a sentence
-            sentence = self.remove_punctuation(sentence)
-            for word in sentence.split(' '):
-                if(len(word) > 0):
-                    words.append(word.lower())
+    def tokenize(self, sentence):
+        # Removing all other punctuation from a sentence
+        sentence = self.remove_punctuation(sentence)
 
-        return words
+        # Splitting into difference sentences
+        # words = word_tokenize(sentence)
+        # # print(words)
+        # # Removing all the stop words
+        # # new_words = []
+        # # for word in words:
+        # #     if(word not in self.stopwords):
+        # #         new_words.append(word)
+        
+        # # print(new_words)
+        # return words
 
     def pad_sentence(self, words):
         padding = [0 for _ in range(self.embedding_dim)]

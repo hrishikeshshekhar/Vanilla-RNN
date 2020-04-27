@@ -3,15 +3,12 @@ import matplotlib.pyplot as plt
 
 from rnn import RNN
 from embedding import embeddings
-from data import toy_data
-
-train_data = toy_data.train_data
-test_data = toy_data.test_data
+from data.toy_data import train_data, test_data
 
 # Defining hyper parameters
 learning_rate = 0.001
-hidden_dim = 64
-optimizer = "rmsprop"
+hidden_dim = 16
+optimizer = "momentum"
 batch_size = 15
 output_dim = 2
 sentence_length = 10
@@ -31,10 +28,10 @@ rnn.summary()
 save_path = "./weights/imbd_data/weight_data_" + \
     optimizer + str(batch_size) + "_" + str(hidden_dim) + "_" + \
     str(learning_rate) + '_' + str(sentence_length) + ".pkl"
-try:
-    rnn.load_weights(save_path)
-except:
-    print("No weights exist in path : {}").format(save_path)
+# try:
+#     rnn.load_weights(save_path)
+# except:
+#     print("No weights exist in path : {}".format(save_path))
 
 # Perparing the input data
 train_X = embedding.get_data_from_list(train_data.keys())
@@ -43,7 +40,7 @@ test_X = embedding.get_data_from_list(test_data.keys())
 test_Y = test_data.values()
 
 # # Training the rnn
-epochs = 100
+epochs = 1001
 losses, correct_values = rnn.train(
     train_X, train_Y, test_X, test_Y, epochs, verbose=True, batch_size=batch_size)
 
@@ -72,5 +69,5 @@ tests = [
 
 test_data = embedding.get_data_from_list(tests)
 preds = rnn.predict(test_data)
-print("Testing data : {}").format(tests)
-print("Predictions  : {}").format(preds)
+print("Testing data : {}".format(tests))
+print("Predictions  : {}".format(preds))
