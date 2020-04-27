@@ -12,16 +12,16 @@ class RNN:
         try:
             assert(optimizer in valid_optimizers)
         except:
-            print("Available optimizers are : {}").format(valid_optimizers)
-            raise ValueError("Cannot recognize optimizer : {}").format(optimizer)
+            print("Available optimizers are : {}".format(valid_optimizers))
+            raise ValueError("Cannot recognize optimizer : {}".format(optimizer))
         
         # Checking if the initializer is a valid initializer
         valid_initializers = ["normal", "xavier"]
         try:
             assert(initializer in valid_initializers)
         except:
-            print("Available initializers are : {}").format(valid_initializers)
-            raise ValueError("Cannot recognize initializer : {}").format(initializer)
+            print("Available initializers are : {}".format(valid_initializers))
+            raise ValueError("Cannot recognize initializer : {}".format(initializer))
 
         self.minibatches = 1
         self.beta1 = momentum

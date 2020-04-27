@@ -8,9 +8,10 @@ from nltk.tokenize import word_tokenize
 
 
 class embeddings:
-    def __init__(self, sentence_length, embedding_dim=50):
+    def __init__(self, sentence_length, embedding_dim=50, remove_stop_words=False):
         self.sentence_length = sentence_length
         self.embedding_dim = embedding_dim
+        self.remove_stop_words = remove_stop_words
 
         glove_path = "/home/hrishi/Desktop/Personal/Machine-Learning/Datasets/Word2Vecs/glove.6B." + \
             str(embedding_dim) + "d.txt"
@@ -41,22 +42,26 @@ class embeddings:
                 output +=  symbol
         return output
 
-    def tokenize(self, sentence):
+    def tokenize(self, input_sentence):
         # Removing all other punctuation from a sentence
-        sentence = self.remove_punctuation(sentence)
+        sentence = self.remove_punctuation(input_sentence)
 
         # Splitting into difference sentences
-        # words = word_tokenize(sentence)
-        # # print(words)
-        # # Removing all the stop words
-        # # new_words = []
-        # # for word in words:
-        # #     if(word not in self.stopwords):
-        # #         new_words.append(word)
-        
-        # # print(new_words)
-        # return words
+        words = word_tokenize(sentence)
 
+        # Removing all the stop words
+        words = [word.lower() for word in words]
+        
+        # Removing stop words
+        if(self.remove_stop_words):
+            new_words = []
+            for word in words:
+                if(word not in self.stopwords):
+                    new_words.append(word)
+            return new_words
+        else:
+            return words
+        
     def pad_sentence(self, words):
         padding = [0 for _ in range(self.embedding_dim)]
 
@@ -83,8 +88,7 @@ class embeddings:
             try:
                 inputs.append(self.word2vec[word])
             except:
-                # print("Word {} with index {} doesn't exist in glove word to vec").format(
-                #     word, index)
+                # print("The word {} doesn't exist in the word2vec dict".format(word))
                 self.outlier_words.append(word)
                 inputs.append(np.zeros(self.embedding_dim))
 
