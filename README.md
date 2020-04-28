@@ -1,14 +1,28 @@
-### Requirements
+## Requirements
 
 - numpy
 - matplotlib
 
-### Setup
+## Setup
+
+### Install python packages
 ```
     pip install -r requirements.txt
 ```
 
-### TODO
+###  Download glove word2vecs
+```
+wget http://nlp.stanford.edu/data/glove.6B.zip
+``` 
+
+### Download imbd reviews data
+```
+wget https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
+tar -xf imbd_reviews.tar.gz
+mv aclImdb imbd_data
+``` 
+
+## TODO
 
 - [X] Create a requirements.txt (Add install instructions)
 - [X] Make RNN class a separate file
