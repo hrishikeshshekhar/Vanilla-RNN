@@ -125,3 +125,11 @@ class IMBD_data:
         plt.xlabel("Sentence length for IMBD reviews")
         plt.ylabel("Count of sentences")
         plt.show()
+
+    def get_array_from_labels(self, labels):
+        output_labels = []
+        for label in labels:
+            output_label = [0, 0]
+            output_label[int(label)] = 1
+            output_labels.append(output_label)
+        return np.array(output_labels)

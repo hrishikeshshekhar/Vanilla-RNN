@@ -109,4 +109,4 @@ class embeddings:
                                 for sentence in sentences])
         assert(output_data.shape == (
             data_size, self.sentence_length, self.embedding_dim))
-        return output_data
+        return np.array(output_data)
