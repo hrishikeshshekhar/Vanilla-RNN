@@ -21,8 +21,8 @@
 - [X] Experiment with different optimizers (SGD, Batch GD, Momentum, RMSProp)
 - [X] Extract, analyse and train on IMBD Reviews
 - [X] Conduct study for hyper parameter tuning
+- [X] Compare results with Tensorflow's RNN, LSTM module
 - [ ] Check for vanishing and exploding gradients
 - [ ] Add regularization (Dropout, L1, L2)
 - [ ] Create API for sentiment classification
 - [ ] GPU support
-- [ ] Compare results with Tensorflow's RNN, LSTM module
